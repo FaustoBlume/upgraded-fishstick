@@ -1,0 +1,146 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preguntas frecuentes</title>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <!-- Header -->
+  <header class="bg-red-700 text-white">
+    <!-- Barra superior con flechas + tabs -->
+    <nav class="tab-bar">
+      <!-- Flecha retroceder -->
+      <button
+        *ngIf="rol === 'Recursos Humanos'"
+        (click)="retrocederPreguntas()"
+        class="flecha-nav"
+        title="Anterior"
+      >
+        <svg class="flecha-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M15 18l-6-6 6-6" stroke="currentColor" />
+        </svg>
+      </button>
+    
+      <!-- Tabs -->
+      <div class="tab-buttons">
+        <button
+          (click)="cambiarSeccion('ticket')"
+          [class.active]="tipo === 'ticket'"
+        >Tickets</button>
+        <button
+          *ngIf="rol === 'Recursos Humanos'"
+          (click)="cambiarSeccion('template')"
+          [class.active]="tipo === 'template'"
+        >Template</button>
+        <button
+          *ngIf="rol === 'Recursos Humanos'"
+          (click)="cambiarSeccion('reporte')"
+          [class.active]="tipo === 'reporte'"
+        >Reporte</button>
+        <button
+          *ngIf="rol === 'Recursos Humanos'"
+          (click)="cambiarSeccion('busqueda')"
+          [class.active]="tipo === 'busqueda'"
+        >Búsqueda</button>
+      </div>
+    
+      <!-- Flecha avanzar -->
+      <button
+        *ngIf="rol === 'Recursos Humanos'"
+        (click)="avanzarPreguntas()"
+        class="flecha-nav"
+        title="Siguiente"
+      >
+        <svg class="flecha-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M9 18l6-6-6-6" stroke="currentColor" />
+        </svg>
+      </button>
+    </nav>
+    
+  </header>
+
+  <!-- Contenido principal -->
+  <main class="max-w-4xl mx-auto px-4 py-8 space-y-10">
+    
+    <!-- Sección Ticket -->
+    <div *ngIf="ticket" class="bg-white p-6 rounded-lg shadow">
+      <h2 class="bg-red-700 text-white text-lg p-4 rounded-t-lg">Tickets</h2>
+      <ul class="mt-4 space-y-2">
+        <li *ngFor="let item of preguntasTickets; let i = index">
+          <button
+            class="accordion-button text-left w-full flex items-center gap-2 text-gray-800 font-medium"
+            (click)="toggleRespuestaTicket(i)"
+          >
+            <i [class]="abiertaTicket[i] ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i>
+            {{ item }}
+          </button>
+    
+          <div *ngIf="abiertaTicket[i]" class="mt-2 pl-6 text-gray-700 text-sm leading-relaxed">
+            {{ respuestasTickets[i] }}
+          </div>
+        </li>
+      </ul>
+    </div>
+    
+
+    <!-- Sección Template -->
+      <div *ngIf="template" class="bg-white p-6 rounded-lg shadow">
+        <h2 class="bg-red-700 text-white text-lg p-4 rounded-t-lg">Template</h2>
+        <ul class="mt-4 space-y-2">
+          <li *ngFor="let item of preguntasTemplate; let i = index">
+            <button
+              class="accordion-button text-left w-full flex items-center gap-2 text-gray-800 font-medium"
+              (click)="toggleRespuestaTemplate(i)"
+            >
+              <i [class]="abiertaTemplate[i] ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i>
+              {{ item }}
+            </button>
+            <div *ngIf="abiertaTemplate[i]" class="mt-2 pl-6 text-gray-700 text-sm leading-relaxed">
+              {{ respuestasTemplate[i] }}
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Sección Reporte -->
+      <div *ngIf="reporte" class="bg-white p-6 rounded-lg shadow">
+        <h2 class="bg-red-700 text-white text-lg p-4 rounded-t-lg">Reporte</h2>
+        <ul class="mt-4 space-y-2">
+          <li *ngFor="let item of preguntasReporte; let i = index">
+            <button
+              class="accordion-button text-left w-full flex items-center gap-2 text-gray-800 font-medium"
+              (click)="toggleRespuestaReporte(i)"
+            >
+              <i [class]="abiertaReporte[i] ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i>
+              {{ item }}
+            </button>
+            <div *ngIf="abiertaReporte[i]" class="mt-2 pl-6 text-gray-700 text-sm leading-relaxed">
+              {{ respuestasReporte[i] }}
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Sección Búsqueda -->
+      <div *ngIf="busqueda" class="bg-white p-6 rounded-lg shadow">
+        <h2 class="bg-red-700 text-white text-lg p-4 rounded-t-lg">Búsqueda</h2>
+        <ul class="mt-4 space-y-2">
+          <li *ngFor="let item of preguntasBusqueda; let i = index">
+            <button
+              class="accordion-button text-left w-full flex items-center gap-2 text-gray-800 font-medium"
+              (click)="toggleRespuestaBusqueda(i)"
+            >
+              <i [class]="abiertaBusqueda[i] ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i>
+              {{ item }}
+            </button>
+            <div *ngIf="abiertaBusqueda[i]" class="mt-2 pl-6 text-gray-700 text-sm leading-relaxed">
+              {{ respuestasBusqueda[i] }}
+            </div>
+          </li>
+        </ul>
+      </div>
+
+
+  </main>
+</body>
+</html>

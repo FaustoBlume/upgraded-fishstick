@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ticket Creation</title>
+</head>
+<body class="min-h-screen">
+  <div class="min-h-screen flex flex-col bg-gray-100">
+
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-300 px-8 py-6 shadow-sm rounded-t-md flex justify-between items-start">
+      <!-- Izquierda: Título y Área Responsable -->
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ asunto }}</h1>
+        <div class="text-sm text-gray-500 mt-1">{{ areaResponsable }}</div>
+      </div>
+    
+      <!-- Derecha: Botón Atrás alineado arriba -->
+      <button
+        class="bg-gray-300 text-gray-800 px-5 py-2.5 rounded-lg flex items-center hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition"
+        (click)="volverAtras()"
+      >
+        <i class="fas fa-arrow-left mr-2"></i> Atrás
+      </button>
+    </div>
+    
+    
+    <div class="flex-grow w-full max-w-7xl mx-auto px-4 py-4">
+    
+    
+    <!-- Formulario -->
+    <form>
+      <div class="bg-white p-8 rounded shadow-md">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+
+          <!-- Nombre y Apellido -->
+          <div>
+            <label class="block text-gray-700">Solicitante:</label>
+            <input
+              type="text"
+              class="w-full border p-2 rounded"
+              [value]="nombre + ' ' + Apellido"
+              name="solicitante"
+              disabled
+            />
+          </div>
+          
+
+          <!-- Fecha -->
+          <div>
+            <label class="block text-gray-700">Fecha:</label>
+            <input
+              type="text"
+              class="w-full border p-2 rounded"
+              [value]="fechaSolicitud | date: 'dd/MM/yyyy HH:mm'"
+              name="fecha"
+              disabled
+            />
+          </div>
+          <div>
+            <label class="block text-gray-700">Ultima actualización:</label>
+            <input
+              type="text"
+              class="w-full border p-2 rounded"
+              [value]="fechaActualizacion | date: 'dd/MM/yyyy HH:mm'"
+              name="fechaActualizacion"
+              disabled
+            />
+          </div>
+
+          <!-- Prioridad -->
+          <div>
+            <label class="block text-gray-700">Prioridad:</label>
+            <select
+              class="w-full border p-2 rounded"
+              [(ngModel)]="prioridad"
+              name="prioridad"
+              [disabled]="modEstado === true"
+            >
+              <option value="Baja">Baja</option>
+              <option value="Media">Media</option>
+              <option value="Alta">Alta</option>
+            </select>
+          </div>
+
+          <!-- Tipo de Solicitud -->
+          <div>
+            <label class="block text-gray-700">Tipo de Solicitud:</label>
+            <input
+              type="text"
+              class="w-full border p-2 rounded"
+              [(ngModel)]="Tipo"
+              name="Tipo"
+              [disabled]=true
+            />
+          </div>
+
+          <!-- Estado -->
+          <div>
+            <label class="block text-gray-700">Estado:</label>
+            <select
+              class="w-full border p-2 rounded"
+              [(ngModel)]="estado"
+              name="estado"
+              [disabled]="modEstado === true"
+            >
+              <option value="Enviado" disabled>Enviado</option>
+              <option value="Recibido" [disabled]="!modificacion">Recibido</option>
+              <option value="Pendiente" [disabled]="!modificacion">Pendiente</option>
+              <option value="Esperando respuesta">Esperando respuesta del sector</option>
+              <option value="Finalizado" [disabled]="modificacion">Finalizado</option>
+            </select>
+          </div>
+          <!-- Área responsable -->
+        <div class="bg-gray-100 p-4 rounded mt-4 space-y-2">
+          <!-- Área responsable (editable con <select>) -->
+          <label class="block font-bold text-gray-700 mb-1">Área responsable:</label>
+          <select
+            [(ngModel)]="areaResponsable"
+            name="areaResponsable"
+            class="w-full border border-gray-300 p-2 rounded"
+             disabled="true"
+          >
+            <option value="Sistemas">Sistemas</option>
+            <option value="Recursos Humanos">Recursos Humanos</option>
+            <option value="Operaciones">Operaciones</option>
+            <option value="Contabilidad">Contabilidad</option>
+            <option value="Tesoreria">Tesoreria</option>
+            <option value="Administración">Administración</option>
+          </select>
+        
+          <!-- Encargado -->
+          <div *ngIf="nombreResponsable">
+            <label class="block font-bold text-gray-700 mt-3">Encargado:</label>
+            <input
+              [value]="nombreResponsable + ' ' + apellidoResponsable"
+              class="w-full border border-gray-300 p-2 rounded"
+              disabled
+            />
+          </div>
+
+          <button
+        *ngIf="nombreResponsable === '' && rolUsuario === areaResponsable && nombre !== nombreUsuario"
+        class="bg-green-700 text-white px-4 py-2 rounded"
+        (click)="asignarResponsable()"
+          >
+            Asignarse
+          </button>
+          
+        </div>
+          <!-- Detalles -->
+          <div class="md:col-span-2">
+            <label class="block text-gray-700">Detalles:</label>
+            <textarea
+              class="w-full border p-2 rounded h-40"
+              [(ngModel)]="Detalles"
+              name="Detalles"
+              [disabled]="estado === 'Finalizado'"
+            ></textarea>
+          </div>
+
+          <!-- Calificación -->
+          <div *ngIf="(estado !== 'Finalizado' && rolUsuario !== areaResponsable && !modEstado) || puntuacionConfirmada">
+            <label class="block text-gray-800 text-lg font-semibold mb-4">Calificación de la atención:</label>
+          
+            <!-- Mostrar input si ya se confirmó -->
+            <div *ngIf="puntuacionConfirmada; else sliderBlock">
+              <input
+                type="text"
+                [value]="puntuacion"
+                disabled
+                class="w-full border border-gray-300 p-3 rounded text-center font-bold text-red-700"
+              />
+            </div>
+          
+            <!-- Bloque del slider -->
+            <ng-template #sliderBlock>
+              <div class="flex flex-col items-center">
+                <input
+                  type="range"
+                  name="rango"
+                  min="1"
+                  max="10"
+                  [(ngModel)]="puntuacion"
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none accent-red-700 mb-2"
+                />
+                <div class="flex justify-between w-full text-sm text-gray-700 px-1 mb-2">
+                  <span *ngFor="let n of [1,2,3,4,5,6,7,8,9,10]">{{ n }}</span>
+                </div>
+                <button
+                  type="button"
+                  (click)="confirmarPuntuacion()"
+                  class="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800 transition"
+                >
+                  Confirmar puntuación
+                </button>
+              </div>
+            </ng-template>
+          </div>
+          
+          
+
+          <!-- Sección OtroTicket -->          
+            <!-- Campos de texto (inputs) -->
+            <div *ngFor="let input of respuestasInputs; let i = index" class="col-span-2 space-y-2">
+              <label class="block text-gray-700 font-medium">
+                {{ input.nombre || 'Campo de texto' }}:
+              </label>
+              <input
+                [(ngModel)]="input.valor"
+                name="input{{ i }}"
+                [ngModelOptions]="{ standalone: true }"
+                class="w-full border border-gray-300 p-2 rounded"
+                placeholder="Ingrese un valor"
+                [disabled]="estado === 'Finalizado'"
+              />
+            </div>
+
+            <!-- Desplegables -->
+            <div *ngFor="let d of desplegablesTemplate; let i = index" class="col-span-2">
+              <label class="block text-gray-700 font-medium">{{ d.nombre }}:</label>
+              <select
+                [(ngModel)]="respuestasDesplegables[i].seleccion"
+                class="w-full border p-2 rounded"
+                name="desp{{ i }}"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="estado === 'Finalizado'"
+              >
+                <option value="" disabled hidden>Seleccione una opción</option>
+                <option *ngFor="let opcion of d.opciones" [value]="opcion">
+                  {{ opcion }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Radio buttons -->
+            <div *ngFor="let d of radioButtonsTemplate; let i = index" class="col-span-2">
+              <label class="block text-gray-700 font-medium">{{ d.nombre }}:</label>
+              <div class="flex flex-col space-y-1">
+                <label *ngFor="let opcion of d.opciones" class="flex items-center gap-2">
+                  <input
+                      type="radio"
+                      [value]="opcion"
+                      name="radioGroup{{ i }}"
+                      [(ngModel)]="respuestasRadioButtons[i].seleccion"
+                      [ngModelOptions]="{ standalone: true }"
+                      class="text-red-600"
+                      [disabled]="estado === 'Finalizado'"
+                    />
+                  <span>{{ opcion }}</span>
+                </label>
+              </div>
+            </div>
+             
+        </div>
+
+        
+      </div>
+    </form>
+
+    
+
+    
+
+    <!-- Botones -->
+    <div class="flex space-x-4 mt-6">
+      <button class="bg-red-700 text-white px-4 py-2 rounded" [hidden]="estado === 'Finalizado'" (click)="updateTicket()">Modificar</button>
+      <button class="bg-red-700 text-white px-4 py-2 rounded" [hidden]="estado === 'Finalizado'" (click)="deleteTicket()">Eliminar</button>
+    </div>
+    <!-- Comentarios -->
+      <div class="mt-6">
+        <h2 class="text-2xl font-bold mb-4">Comentarios</h2>
+
+        <div *ngFor="let comentario of comentarios" class="bg-white p-4 rounded shadow mb-4">
+          <h3 class="font-semibold">
+            {{ comentario.nombreEscritor }} {{ comentario.apellidoEscritor }}
+          </h3>
+          <p class="text-sm text-gray-600 mb-1">
+            {{ comentario.fechaComentario | date:'EEEE dd/MM/yyyy - HH:mm' }}
+          </p>
+          <p class="text-gray-800 whitespace-pre-wrap">{{ comentario.comentario }}</p>
+        </div>
+
+        <form [formGroup]="formComentario" (ngSubmit)="guardarComentario()">
+          <div class="bg-white p-6 rounded shadow">
+            <label class="block text-gray-700 font-semibold mb-2">Nuevo Comentario:</label>
+            <textarea
+              class="w-full border border-gray-300 p-2 rounded h-32 mb-4"
+              formControlName="comentario"
+              placeholder="Escribí tu comentario..."
+            ></textarea>
+            <button type="submit" class="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800">
+              Agregar Comentario
+            </button>
+          </div>
+        </form>
+      </div>
+
+
+      <div class="mt-8">
+        <h2 class="text-xl font-bold mb-4">Historial de cambios</h2>
+      
+        <div *ngIf="historialAgrupadoArray.length === 0" class="text-gray-500 italic">
+          No hay historial registrado.
+        </div>
+      
+        <div *ngIf="historialAgrupadoArray.length > 0">
+          <details class="bg-white rounded shadow p-4" open>
+            <summary class="font-semibold text-lg cursor-pointer">Ver historial completo</summary>
+      
+            <ul class="mt-4 space-y-4">
+              <li *ngFor="let grupo of (historialAgrupadoArray.slice().reverse() | slice:0:(mostrarHistorialCompleto ? undefined : 3))">
+                <div class="text-gray-800">
+                  <ng-container *ngIf="grupo.nombre; else sinNombre">
+                    El campo <strong>{{ grupo.nombre }}</strong> tuvo los siguientes cambios:
+                  </ng-container>
+                  <ng-template #sinNombre>
+                    Cambios generales:
+                  </ng-template>
+      
+                  <ul class="ml-4 list-disc text-sm mt-1">
+                    <li *ngFor="let c of grupo.cambios">
+                      <strong>{{ c.prop }}</strong>: "{{ c.anterior }}" → "{{ c.nuevo }}"
+                    </li>
+                  </ul>
+                </div>
+                <div class="text-xs text-gray-500">
+                  Modificado el {{ grupo.fecha | date: 'dd/MM/yyyy HH:mm' }} por {{ grupo.usuario }}
+                </div>
+              </li>
+            </ul>
+      
+            <div *ngIf="historialAgrupadoArray.length > 3" class="mt-4 text-right">
+              <button
+                class="text-sm text-blue-600 underline"
+                (click)="mostrarHistorialCompleto = !mostrarHistorialCompleto"
+              >
+                {{ mostrarHistorialCompleto ? 'Ver menos' : 'Ver más' }}
+              </button>
+            </div>
+          </details>
+        </div>
+      </div>
+      
+      
+      
+      
+    
+
+    
+  </div>
+</div>
+</body>
+</html>
+

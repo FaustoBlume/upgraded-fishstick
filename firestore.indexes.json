@@ -1,0 +1,189 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "candidato",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "idBusqueda",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fecha",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "comentario",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "idTicket",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fechaComentario",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "entrevista",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "idBusqueda",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "idCandidato",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fecha",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "entrevista",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "idCandidato",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fecha",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "examen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "idBusqueda",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "idCandidato",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fecha",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "examen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "idCandidato",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fecha",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "modificacion",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "idBusqueda",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fecha",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "ticket",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "apellidoSolicitante",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nombreSolicitante",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "ticket",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "areaResponsable",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "estado",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "ticket",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "estado",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fechaSolicitud",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "ticket",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fechaSolicitud",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "ticket",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fechaSolicitud",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "estado",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

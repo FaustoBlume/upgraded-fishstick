@@ -1,0 +1,16 @@
+.error-title {
+    margin-bottom: 8px; /* Espacio debajo del título */
+    font-weight: bold;
+    color: white;
+}
+
+
+.error-message {
+    margin: 2rem; /* Eliminar márgenes por defecto */
+    font-size: 1.5rem; /* Tamaño de fuente para el mensaje */
+}
+
+
+.accept-button {
+    margin-top: 16px; /* Espacio encima del botón */
+}

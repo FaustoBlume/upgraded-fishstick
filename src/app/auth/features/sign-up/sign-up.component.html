@@ -1,0 +1,75 @@
+<body class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="bg-white shadow-xl rounded-lg p-10 w-full max-w-2xl">
+      
+      <!-- Encabezado -->
+      <div class="mb-8 text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Crear nuevo usuario</h1>
+        <p class="text-gray-500 text-sm">Complete todos los campos para registrar un usuario</p>
+      </div>
+  
+      <!-- Formulario -->
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+  
+        <!-- Nombre y Apellido -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Nombre</label>
+            <input type="text" formControlName="nombreUsuario"
+              class="mt-1 w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Apellido</label>
+            <input type="text" formControlName="apellidoUsuario"
+              class="mt-1 w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" />
+          </div>
+        </div>
+  
+        <!-- Email -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Email</label>
+          <input type="email" formControlName="email"
+            class="mt-1 w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" />
+          @if(isRequired('email')) {
+            <small class="text-red-500">Este campo es requerido</small>
+          }
+          @if(hasEmailError()) {
+            <small class="text-red-500">El correo debe ser válido</small>
+          }
+        </div>
+  
+        <!-- Contraseña -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Contraseña</label>
+          <input type="password" formControlName="password"
+            class="mt-1 w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" />
+          @if(isRequired('password')) {
+            <small class="text-red-500">Este campo es requerido</small>
+          }
+        </div>
+  
+        <!-- Rol -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Rol del usuario</label>
+          <select formControlName="rolUsuario"
+            class="mt-1 w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500">
+            <option value="">Seleccione un rol</option>
+            <option value="Sistemas">Sistemas</option>
+            <option value="Recursos Humanos">Recursos Humanos</option>
+            <option value="Operaciones">Operaciones</option>
+            <option value="Contabilidad">Contabilidad</option>
+            <option value="Tesoreria">Tesoreria</option>
+            <option value="Administración">Administración</option>
+          </select>
+        </div>
+  
+        <!-- Botón -->
+        <div>
+          <button type="submit"
+            class="w-full py-3 px-6 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md shadow-md transition">
+            Crear usuario
+          </button>
+        </div>
+      </form>
+    </div>
+  </body>
+  

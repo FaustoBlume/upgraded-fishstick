@@ -1,0 +1,51 @@
+/* Adding space between buttons using margin-bottom */
+.nav-link {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 4px;
+    padding-right: 24px;
+}
+
+/* Optional: Add margin to button specifically if needed */
+button.nav-link {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 4px;
+    padding-right: 24px;
+}
+/* Hover effect for both links and buttons */
+.nav-link:hover {
+    background-color: rgba(249, 168, 145, 0.5); /* Semi-transparent background */
+    border-radius: 12px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 4px;
+    padding-right: 24px;
+    width:100%;
+    text-align: left;
+}
+
+/* Focus effect for both links and buttons */
+.nav-link:focus-visible {
+    outline: none;
+    border: 2px solid white;
+    background-color: rgba(249, 168, 145, 0.5); /* Lightly darker on focus */
+    border-radius: 12px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 4px;
+    padding-right: 24px;
+    width:100%
+}
+
+/* Optional: Focus effect for buttons specifically (can also work for links) */
+button.nav-link:focus-visible {
+    outline: none;
+    border: 2px solid white;
+    border-radius: 12px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 4px;
+    padding-right: 24px;
+    width:100%
+}

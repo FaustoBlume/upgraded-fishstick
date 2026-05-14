@@ -1,0 +1,51 @@
+﻿body{
+    animation-name: fade-de-arriba;
+    animation-duration: 1s;
+}
+
+h1{
+    animation-name: fade-de-izq;
+    animation-fill-mode: backwards;
+    animation-delay: 0.5s;
+    animation-duration: 2s;
+}
+
+.animacionForm{
+    animation-name: fade-de-derecha;
+    animation-fill-mode: backwards;
+    animation-delay: 0.5s;
+    animation-duration: 2s;
+}
+
+@keyframes fade-de-izq{
+    0%{
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    100%{
+        opacity: 1;
+        transform: translateX(0px)
+    }
+}
+
+@keyframes fade-de-arriba{
+    0%{
+        opacity: 0;
+        transform: translateY(-40px);
+    }
+    100%{
+        opacity: 1;
+        transform: translateY(0px)
+    }
+}
+
+@keyframes fade-de-derecha{
+    0%{
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    100%{
+        opacity: 1;
+        transform: translateX(0px)
+    }
+}

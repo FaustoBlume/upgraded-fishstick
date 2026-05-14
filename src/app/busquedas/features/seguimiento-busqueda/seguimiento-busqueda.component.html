@@ -1,0 +1,884 @@
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Seguimiento de Busqueda
+  </title>
+  <script src="">
+  </script>
+  <link href="" rel="stylesheet"/>
+ </head>
+ <body class="bg-gray-100">
+    <div class="min-h-screen flex flex-col">
+      <main class="flex-grow">
+  
+   
+   <!-- Main Content -->
+   <ng-template [ngIf]="listado">
+    <div class="flex justify-center px-6 md:px-16">
+      <div class="w-full py-10 space-y-8">
+  
+        <!-- Header con título y botones -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <h1 class="text-2xl font-bold text-gray-800">Seleccione la Búsqueda</h1>
+            <div class="flex flex-col sm:flex-row gap-3">
+            <button
+              class="bg-red-700 text-white px-5 py-2 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+              (click)="irnuevaBusqueda()">
+              Agregar búsqueda
+            </button>
+            <button
+              class="bg-red-700 text-white px-5 py-2 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+              (click)="irPuesto()">
+              Agregar puesto
+            </button>
+          </div>
+        </div>
+  
+        <!-- Mensaje cuando no hay búsquedas -->
+                <div
+                *ngIf="!cargandoBusquedas && busquedas.length === 0"
+                class="text-gray-600 text-sm bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded"
+                >
+                No existen búsquedas activas. Las búsquedas existentes fueron cerradas, o no existen búsquedas. Consulte la pestaña
+                <strong>"Historial Búsqueda"</strong> o <strong>"Preguntas Frecuentes"</strong> para más información.
+                </div>
+
+                <!-- Listado de búsquedas -->
+                <div
+                *ngFor="let busqueda of busquedas; let i = index"
+                class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 w-full"
+                >
+                <button
+                class="bg-red-600 text-white px-6 py-3 rounded-lg text-left w-full lg:flex-1 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
+                (click)="irBusqueda(i)"
+                >
+                {{ busqueda.nombre }} desde
+                {{ busqueda.fechaDesde | date: 'dd-MM-yyyy' }} hasta
+                {{ busqueda.fechaHasta | date: 'dd-MM-yyyy' }}
+                </button>
+
+                <button
+                class="bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 transition-all"
+                (click)="cerrarBusqueda(i)"
+                title="Cerrar búsqueda"
+                >
+                <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M9 11l3 3l8 -8" />
+                    <path
+                    d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9"
+                    />
+                </svg>
+                </button>
+                </div>
+
+  
+      </div>
+    </div>
+  </ng-template>
+  
+    
+    
+  <ng-template [ngIf]="busqueda">
+    <div class="py-8 px-4 md:px-10 max-w-7xl mx-auto space-y-8">
+  
+      <!-- Título y acciones -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <h2 class="text-3xl font-bold text-center text-gray-800 w-full md:w-auto">{{ puesto }}</h2>
+  
+        <!-- Botones de acción -->
+        <div class="flex flex-wrap justify-center gap-4">
+          <!-- Agregar candidato -->
+          <button
+            class="bg-red-700 text-white px-5 py-2.5 rounded-lg flex items-center hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+            (click)="agregarCandidato()"
+          >
+            <i class="fas fa-user-plus mr-2"></i> Agregar candidato
+          </button>
+  
+          <!-- Notificaciones -->
+          <ng-container *ngIf="modificaciones.length > 0">
+            <!-- Botón Notificaciones -->
+            <button
+            class="bg-yellow-500 text-white px-5 py-2.5 rounded-lg flex items-center hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+            (click)="mostrarSidebar = !mostrarSidebar"
+            >
+            <i class="fas fa-bell mr-2"></i> Notificaciones
+            </button>
+          </ng-container>
+
+          <!-- Sidebar de Notificaciones -->
+                <div
+                *ngIf="mostrarSidebar"
+                class="fixed top-0 right-0 w-full sm:w-96 h-full bg-white shadow-lg z-50 p-6 border-l border-gray-200 transform transition-transform duration-300"
+                >
+                <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Notificaciones</h3>
+                <button (click)="mostrarSidebar = false" class="text-gray-500 hover:text-red-600 text-xl">&times;</button>
+                </div>
+
+                <div class="space-y-3 max-h-[85vh] overflow-y-auto">
+                    <div
+                        *ngFor="let mod of modificaciones"
+                        class="bg-blue-100 border border-blue-300 rounded-lg p-4 shadow-sm space-y-1"
+                        >
+                        <p class="text-sm text-gray-800 font-medium">
+                            {{ mod.asignacion }}
+                        </p>
+                        <p class="text-xs text-gray-600 italic">
+                            {{ mod.fecha | date:'dd/MM/yyyy HH:mm' }}
+                        </p>
+                        </div>
+
+                </div>
+                </div>
+
+  
+          <!-- Atrás -->
+          <button
+            class="bg-gray-300 text-gray-800 px-5 py-2.5 rounded-lg flex items-center hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition"
+            (click)="irAtras()"
+          >
+            <i class="fas fa-arrow-left mr-2"></i> Atrás
+          </button>
+        </div>
+      </div>
+  
+      <!-- Tabla -->
+      <div class="overflow-x-auto shadow-md rounded-lg bg-white">
+        <table class="min-w-full divide-y divide-gray-200 text-sm">
+          <thead class="bg-gray-200 text-gray-700 uppercase text-xs tracking-wider">
+            <tr>
+              <th class="px-6 py-3 text-left">Nombre y Apellido</th>
+              <th class="px-6 py-3 text-left">Estado</th>
+              <th class="px-6 py-3 text-left">Detalles</th>
+              <th class="px-6 py-3 text-left">Entrevista</th>
+              <th class="px-6 py-3 text-left">Exámenes</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr *ngFor="let candidato of candidatos; let i = index" class="hover:bg-gray-50">
+              <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                {{ candidato.nombre }} {{ candidato.apellido }}
+              </td>
+              <td class="px-6 py-4">
+                <span class="inline-block px-2 py-1 rounded text-xs font-semibold"
+                  [ngClass]="{
+                    'bg-green-100 text-green-700': candidato.estado === 'Ingreso',
+                    'bg-blue-100 text-blue-700': candidato.estado === 'Pasa instancia Entrevista',
+                    'bg-violet-100 text-violet-700': candidato.estado === 'Pasa instancia Examenes',     
+                    'bg-yellow-100 text-yellow-800': candidato.estado === 'Preseleccion',
+                    'bg-red-100 text-red-700': candidato.estado === 'Rechazado'
+                  }">
+                  {{ candidato.estado }}
+                </span>
+              <td class="px-6 py-4">
+                <button
+                  (click)="modificarCandidato(i)"
+                  class="bg-red-700 text-white px-3 py-1 rounded text-sm hover:bg-red-800 transition"
+                >
+                  Detalles
+                </button>
+              </td>
+              <td class="px-6 py-4">
+                <button
+                  class="text-blue-600 hover:underline transition"
+                  (click)="verEntrevistas(i)"
+                >
+                  Ver entrevistas
+                </button>
+              </td>
+              <td class="px-6 py-4">
+                <button
+                  class="text-blue-600 hover:underline transition"
+                  (click)="verExamenes(i)"
+                >
+                  Ver exámenes
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-template>
+
+
+  <!-- Ver examenes-->
+  
+  <main class="flex-grow bg-gray-100">
+  <ng-template [ngIf]="examen">
+    <div class="py-8 px-4 md:px-10 max-w-7xl mx-auto space-y-6">
+  
+      <!-- Título -->
+      <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-gray-800">
+          Exámenes de {{ nombreCandidato }} {{ apellidoCandidato }}
+        </h2>
+        <button
+          class="bg-red-700 text-white px-4 py-2 rounded-lg hover:bg-red-800 transition focus:outline-none focus:ring-2 focus:ring-red-500"
+          (click)="agregarExamen()"
+        >
+          + Agregar examen
+        </button>
+      </div>
+  
+      <!-- Tabla -->
+      <div class="overflow-x-auto shadow-md rounded-lg bg-white">
+        <table class="min-w-full divide-y divide-gray-200 text-sm">
+          <thead class="bg-gray-200 text-gray-700 uppercase text-xs tracking-wider">
+            <tr>
+              <th class="px-6 py-3 text-left">Nombre Examen</th>
+              <th class="px-6 py-3 text-left">Fecha</th>
+              <th class="px-6 py-3 text-left">Resultado</th>
+              <th class="px-6 py-3 text-left">Responsable</th>
+              <th class="px-6 py-3 text-left">Editar</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr *ngFor="let examen of examenes; let i = index" class="hover:bg-gray-50">
+              <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                {{ examen.nombre }}
+              </td>
+              <td class="px-6 py-4 text-gray-700">
+                {{ examen.fecha }}
+              </td>
+              <td class="px-6 py-4 text-gray-700">
+                {{ examen.resultado }}
+              </td>
+              <td class="px-6 py-4 text-gray-700">
+                {{ examen.nombreResponsable }} {{ examen.apellidoResponsable }}
+              </td>
+              <td class="px-6 py-4">
+                <button
+                  (click)="editarExamen(i)"
+                  class="text-blue-600 hover:text-blue-800 transition"
+                  title="Editar examen"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="feather feather-edit">
+                    <path d="M11 4h7a2 2 0 0 1 2 2v7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 0 3L9 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  
+    </div>
+  </ng-template>
+</main>
+  
+
+<!-- Ver entrevistas -->
+<main class="flex-grow bg-gray-100">
+    
+    <div *ngIf="entrevista" class="py-8 px-4 md:px-10 max-w-7xl mx-auto space-y-6">
+  
+        <!-- Título -->
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold text-gray-800">
+          Entrevistas de {{ nombreCandidato }} {{ apellidoCandidato }}
+        </h2>
+        <button
+          class="mt-4 md:mt-0 bg-red-700 text-white px-5 py-2 rounded-lg hover:bg-red-800 transition focus:outline-none focus:ring-2 focus:ring-red-500"
+          (click)="agregarEntrevista()"
+        >
+          + Agregar entrevista
+        </button>
+      </div>
+  
+      <!-- Tabla de entrevistas -->
+      <div class="overflow-x-auto shadow-md rounded-lg bg-white">
+        <table class="min-w-full divide-y divide-gray-200 text-sm">
+          <thead class="bg-gray-200 text-gray-700 uppercase text-xs tracking-wider">
+            <tr>
+              <th class="px-6 py-3 text-left">Nombre Entrevista</th>
+              <th class="px-6 py-3 text-left">Fecha</th>
+              <th class="px-6 py-3 text-left">Resultado</th>
+              <th class="px-6 py-3 text-left">Responsable</th>
+              <th class="px-6 py-3 text-left">Editar</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr *ngFor="let entrevista of entrevistas; let i = index" class="hover:bg-gray-50">
+              <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                {{ entrevista.nombre }}
+              </td>
+              <td class="px-6 py-4 text-gray-700">
+                {{ entrevista.fecha }}
+              </td>
+              <td class="px-6 py-4 text-gray-700">
+                {{ entrevista.resultado }}
+              </td>
+              <td class="px-6 py-4 text-gray-700">
+                {{ entrevista.nombreResponsable }} {{ entrevista.apellidoResponsable }}
+              </td>
+              <td class="px-6 py-4">
+                <button
+                  (click)="editarEntrevista(i)"
+                  class="text-blue-600 hover:text-blue-800 transition"
+                  title="Editar entrevista"
+                >
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"
+                    class="feather feather-edit">
+                    <path d="M11 4h7a2 2 0 0 1 2 2v7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 0 3L9 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+    </div>
+  </main>
+  
+
+
+<!-- Agregar busqueda -->
+<div *ngIf="nuevaBusqueda" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 overflow-auto">
+    <form [formGroup]="formBusqueda" (ngSubmit)="guardarBusqueda()" class="w-full max-w-xl animate-fade-in-up">
+      <div class="bg-white p-8 rounded-2xl shadow-xl space-y-6">
+        <!-- Título -->
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold text-gray-800">Nueva búsqueda</h2>
+          <button type="button" (click)="cancelarOperacion()" class="text-red-600 hover:text-red-800 text-2xl font-bold">&times;</button>
+        </div>
+  
+        <!-- Campos del formulario -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Nombre -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la búsqueda</label>
+            <input
+              type="text"
+              formControlName="nombreBusqueda"
+              class="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+              required
+            />
+          </div>
+  
+          <!-- Fecha desde -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha inicio</label>
+            <input
+              type="date"
+              formControlName="fechaDesde"
+              class="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+              required
+            />
+          </div>
+  
+          <!-- Fecha hasta -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha fin</label>
+            <input
+              type="date"
+              formControlName="fechaHasta"
+              class="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+              required
+            />
+          </div>
+  
+          <!-- Puestos -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Puesto</label>
+            <select
+              formControlName="idPuesto"
+              class="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+              required
+            >
+              <option *ngFor="let puesto of puestos" [value]="puesto.id">{{ puesto.nombre }}</option>
+            </select>
+          </div>
+        </div>
+  
+        <!-- Botones -->
+        <div class="flex justify-end gap-4 pt-4">
+          <button
+            type="button"
+            class="bg-gray-200 text-gray-800 px-5 py-2 rounded hover:bg-gray-300 transition"
+            (click)="cancelarOperacion()"
+          >
+            Cancelar
+          </button>
+  
+          <button
+            type="submit"
+            class="bg-red-700 text-white px-6 py-2 rounded hover:bg-red-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            [disabled]="formBusqueda.invalid"
+          >
+            Aceptar
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+
+  <!-- Agregar puesto -->
+  <div *ngIf="nuevoPuesto" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 overflow-auto">
+    <form [formGroup]="formPuesto" (ngSubmit)="guardarPuesto()" class="w-full max-w-xl animate-fade-in-up">
+      <div class="bg-white p-8 rounded-2xl shadow-xl space-y-6">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold text-gray-800">Nuevo puesto</h2>
+          <button type="button" (click)="cancelarOperacion()" class="text-red-600 hover:text-red-800 text-2xl font-bold">&times;</button>
+        </div>
+  
+        <!-- Campos del formulario -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Nombre -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del puesto</label>
+            <input
+              type="text"
+              formControlName="nombre"
+              class="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+              required
+            />
+          </div>
+  
+          <!-- Descripción -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción del puesto</label>
+            <input
+              type="text"
+              formControlName="descripcion"
+              class="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+            />
+          </div>
+  
+          <!-- Área -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Área del puesto</label>
+            <select
+              formControlName="area"
+              class="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+              required
+            >
+              <option value="" disabled selected hidden>Seleccione un área</option>
+              <option value="Sistemas">Sistemas</option>
+              <option value="Recursos Humanos">Recursos Humanos</option>
+              <option value="Operaciones">Operaciones</option>
+              <option value="Contabilidad">Contabilidad</option>
+              <option value="Tesoreria">Tesoreria</option>
+              <option value="Administración">Administración</option>
+            </select>
+          </div>
+        </div>
+  
+        <!-- Botones -->
+        <div class="flex justify-end gap-4 pt-4">
+          <button
+            type="button"
+            class="bg-gray-200 text-gray-800 px-5 py-2 rounded hover:bg-gray-300 transition"
+            (click)="cancelarOperacion()"
+          >
+            Cancelar
+          </button>
+  
+          <button
+            type="submit"
+            class="bg-red-700 text-white px-6 py-2 rounded hover:bg-red-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            [disabled]="formPuesto.invalid"
+          >
+            Aceptar
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+  
+
+<!-- Agregar entrevista o examen -->
+<div *ngIf="nuevo" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="w-full max-w-xl animate-fade-in-up">
+      <div class="bg-white p-8 rounded-2xl shadow-xl space-y-6">
+  
+        <!-- Título -->
+        <div class="flex justify-between items-center mb-2">
+          <h2 class="text-2xl font-bold text-gray-800">Nuevo registro</h2>
+          <button type="button" (click)="cancelarOperacion()" class="text-red-600 hover:text-red-800 text-2xl font-bold">&times;</button>
+        </div>
+  
+        <!-- Campos del formulario -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          
+          <!-- Nombre -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+            <input type="text" formControlName="nombre" placeholder="Nombre del examen o entrevista"
+                   class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600" required>
+          </div>
+  
+          <!-- Resultado -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Resultado</label>
+            <select formControlName="resultado"
+                    class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600" required>
+              <option value="Apto">Apto</option>
+              <option value="No Apto">No apto</option>
+              <option value="Apto con observaciones">Apto con observaciones</option>
+              <option value="Ausente">Ausente</option>
+            </select>
+          </div>
+  
+          <!-- Nombre responsable -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre responsable</label>
+            <input type="text" formControlName="nombreResponsable" placeholder="Nombre"
+                   class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600">
+          </div>
+  
+          <!-- Apellido responsable -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Apellido responsable</label>
+            <input type="text" formControlName="apellidoResponsable" placeholder="Apellido"
+                   class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600">
+          </div>
+  
+          <!-- Fecha -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+            <input type="date" formControlName="fecha"
+                   class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600">
+          </div>
+  
+        </div>
+  
+        <!-- Botones -->
+        <div class="flex justify-end gap-4 pt-4">
+          <button type="button"
+                  class="bg-gray-200 text-gray-800 px-5 py-2 rounded hover:bg-gray-300 transition"
+                  (click)="cancelarOperacion()">
+            Cancelar
+          </button>
+          <button type="submit"
+                  class="bg-green-700 text-white px-6 py-2 rounded hover:bg-green-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  [disabled]="form.invalid">
+            Aceptar
+          </button>
+        </div>
+  
+      </div>
+    </form>
+  </div>
+  
+
+
+<!--<ng-template [ngIf]="editar">-->
+    <div *ngIf="editar" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+        <form class="w-full max-w-xl animate-fade-in-up" (ngSubmit)="guardarEdicion()">
+          <div class="bg-white p-8 rounded-2xl shadow-xl space-y-6">
+            
+            <!-- Título + cerrar -->
+            <div class="flex justify-between items-center">
+              <h2 class="text-2xl font-bold text-gray-800">Editar</h2>
+              <button type="button" (click)="cancelarOperacion()" class="text-red-600 hover:text-red-800 text-2xl font-bold">&times;</button>
+            </div>
+      
+            <!-- Campos -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Nombre -->
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                <input
+                  type="text"
+                  [(ngModel)]="nombreExamen"
+                  name="nombreExamen"
+                  required
+                  class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600"
+                />
+              </div>
+      
+              <!-- Resultado -->
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Resultado</label>
+                <select
+                  [(ngModel)]="resultadoExamen"
+                  name="resultadoExamen"
+                  required
+                  class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600"
+                >
+                  <option value="Apto">Apto</option>
+                  <option value="No Apto">No apto</option>
+                  <option value="Apto con observaciones">Apto con observaciones</option>
+                  <option value="Ausente">Ausente</option>
+                </select>
+              </div>
+      
+              <!-- Responsable -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre responsable</label>
+                <input
+                  type="text"
+                  [(ngModel)]="nombreResponsable"
+                  name="nombreResponsable"
+                  class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Apellido responsable</label>
+                <input
+                  type="text"
+                  [(ngModel)]="apellidoResponsable"
+                  name="apellidoResponsable"
+                  class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600"
+                />
+              </div>
+      
+              <!-- Fecha -->
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                <input
+                  type="date"
+                  [(ngModel)]="fechaExamen"
+                  name="fechaExamen"
+                  class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600"
+                />
+              </div>
+            </div>
+      
+            <!-- Botones -->
+            <div class="flex justify-end gap-4 pt-4">
+              <button type="button" (click)="eliminarExamen()" class="bg-red-500 text-white px-5 py-2 rounded hover:bg-red-600 transition">
+                Eliminar
+              </button>
+              <button type="button" (click)="cancelarOperacion()" class="bg-gray-300 text-gray-800 px-5 py-2 rounded hover:bg-gray-400 transition">
+                Cancelar
+              </button>
+              <button type="submit" class="bg-green-700 text-white px-6 py-2 rounded hover:bg-green-800 transition">
+                Aceptar
+              </button>
+            </div>
+      
+          </div>
+        </form>
+      </div>
+      <!--</ng-template>-->
+
+
+<!--<Nuevo candidato>-->
+<div *ngIf="nuevoCandidato" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+    <form [formGroup]="formCandidato" (ngSubmit)="guardarCandidato()" class="w-full max-w-xl animate-fade-in-up">
+      <div class="bg-white p-8 rounded-2xl shadow-xl space-y-6">
+        
+        <!-- Encabezado -->
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold text-gray-800">Nuevo candidato</h2>
+          <button type="button" (click)="cancelarOperacion()" class="text-red-600 hover:text-red-800 text-2xl font-bold">&times;</button>
+        </div>
+  
+        <!-- Formulario -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          
+          <!-- Nombre -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+            <input type="text" formControlName="nombre" placeholder="Nombre"
+                   class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600" required>
+          </div>
+  
+          <!-- Apellido -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+            <input type="text" formControlName="apellido" placeholder="Apellido"
+                   class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600" required>
+          </div>
+  
+          <!-- Toma de contacto -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Toma de contacto</label>
+            <input type="text" formControlName="tomaDeContacto" placeholder="Ej: LinkedIn, Email, Referido..."
+                   class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600">
+          </div>
+  
+          <!-- Experiencia -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Experiencia previa</label>
+            <select formControlName="experiencia"
+                    class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600" required>
+              <option value="Mucha">Más de 5 años de experiencia</option>
+              <option value="Mediana">2-5 años de experiencia</option>
+              <option value="Poca">0-2 años de experiencia</option>
+              <option value="Ninguna">Ninguna experiencia</option>
+            </select>
+          </div>
+  
+          <!-- Estudios -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Estudios</label>
+            <select formControlName="estudios"
+                    class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600" required>
+              <option value="Universitario Completo">Universitario completo</option>
+              <option value="Universitario Avanzado">Universitario avanzado</option>
+              <option value="Universitario Iniciado">Universitario iniciado</option>
+              <option value="Secundario Completo">Secundario completo</option>
+              <option value="Secundario Incompleto">Secundario incompleto</option>
+            </select>
+          </div>
+  
+          <!-- Descripción -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+            <textarea formControlName="descripcion"
+                      class="w-full border border-gray-300 p-3 rounded-md h-32 focus:ring-2 focus:ring-red-600"
+                      placeholder="Información adicional sobre el candidato..."></textarea>
+          </div>
+        </div>
+  
+        <!-- Botones -->
+        <div class="flex justify-end gap-4 pt-2">
+          <button type="button"
+                  class="bg-gray-200 text-gray-800 px-5 py-2 rounded hover:bg-gray-300 transition"
+                  (click)="cancelarOperacion()">
+            Cancelar
+          </button>
+          <button type="submit"
+                  class="bg-red-700 text-white px-6 py-2 rounded hover:bg-red-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  [disabled]="formCandidato.invalid">
+            Aceptar
+          </button>
+        </div>
+  
+      </div>
+    </form>
+  </div>
+  
+
+
+<!--<ng-template [ngIf]="editarCandidato">-->
+    <div *ngIf="editarCandidato" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4 overflow-auto">
+        <form class="w-full max-w-xl animate-fade-in-up" (ngSubmit)="finalizarEdicionCandidato()">
+          <div class="bg-white p-8 rounded-2xl shadow-xl space-y-6">
+      
+            <!-- Título + cerrar -->
+            <div class="flex justify-between items-center">
+              <h2 class="text-2xl font-bold text-gray-800">Editar candidato</h2>
+              <button type="button" (click)="cancelarOperacion()" class="text-red-600 hover:text-red-800 text-2xl font-bold">&times;</button>
+            </div>
+      
+            <!-- Campos -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              <!-- Nombre y Apellido -->
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                <input type="text" [(ngModel)]="nombreCandidato" name="nombre"
+                       class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+                <input type="text" [(ngModel)]="apellidoCandidato" name="apellido"
+                       class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600" />
+              </div>
+      
+              <!-- Estado -->
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                <select [(ngModel)]="estadoCandidato" name="estadoCandidato"
+                        class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600">
+                  <option value="Preseleccion" disabled>Preselección</option>
+                  <option value="Pasa instancia Entrevista">Pasa instancia de entrevista</option>
+                  <option value="Pasa instancia Examenes">Pasa instancia de exámenes</option>
+                  <option value="Rechazado">Rechazado</option>
+                  <option value="Ingreso">Ingreso</option>
+                </select>
+              </div>
+      
+              <!-- Motivo de rechazo (condicional) -->
+              <div *ngIf="estadoCandidato === 'Rechazado'" class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Motivo de rechazo (opcional)</label>
+                <input type="text" [(ngModel)]="motivoRechazo" name="motivoRechazo"
+                       class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600" />
+              </div>
+      
+              <!-- Toma de contacto -->
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Toma de contacto</label>
+                <input type="text" [(ngModel)]="tomaDeContacto" name="tomaDeContacto"
+                       class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600" />
+              </div>
+      
+              <!-- Experiencia -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Experiencia</label>
+                <select [(ngModel)]="experiencia" name="experiencia"
+                        class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600">
+                  <option value="Mucha">Más de 5 años de experiencia</option>
+                  <option value="Mediana">2-5 años de experiencia</option>
+                  <option value="Poca">0-2 años de experiencia</option>
+                  <option value="Ninguna">Ninguna experiencia</option>
+                </select>
+              </div>
+      
+              <!-- Estudios -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Estudios</label>
+                <select [(ngModel)]="estudios" name="estudios"
+                        class="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-red-600">
+                  <option value="Universitario Completo">Universitario completo</option>
+                  <option value="Universitario Avanzado">Universitario avanzado</option>
+                  <option value="Universitario Iniciado">Universitario iniciado</option>
+                  <option value="Secundario Completo">Secundario completo</option>
+                  <option value="Secundario Incompleto">Secundario incompleto</option>
+                </select>
+              </div>
+      
+              <!-- Descripción -->
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                <textarea [(ngModel)]="descripcion" name="descripcion"
+                          class="w-full border border-gray-300 p-3 rounded-md h-32 focus:ring-2 focus:ring-red-600"
+                          placeholder="Información adicional sobre el candidato..."></textarea>
+              </div>
+            </div>
+      
+            <!-- Botones -->
+            <div class="flex justify-end gap-4 pt-4">
+              <button type="button" (click)="eliminarCandidato()" class="bg-red-500 text-white px-5 py-2 rounded hover:bg-red-600 transition">
+                Eliminar
+              </button>
+              <button type="button" (click)="cancelarOperacion()" class="bg-gray-300 text-gray-800 px-5 py-2 rounded hover:bg-gray-400 transition">
+                Cancelar
+              </button>
+              <button type="submit" class="bg-green-700 text-white px-6 py-2 rounded hover:bg-green-800 transition">
+                Aceptar
+              </button>
+            </div>
+      
+          </div>
+        </form>
+      </div>
+      <!--</ng-template>-->
+
+
+</main>
+</div>
+  
+</body>
+</html>
+
+
+
+
+

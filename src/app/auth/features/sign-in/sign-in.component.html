@@ -1,0 +1,51 @@
+<html>
+<head>
+    <title>Login Page</title>
+    <script src=""></script>
+    <link rel="stylesheet" href="">
+</head>
+<body class="h-screen flex flex-col items-center justify-center bg-gray-100">
+    <div class="flex w-3/4 h-3/4 shadow-lg">
+        <!-- Left Side -->
+        <div class="w-1/2 bg-red-600 flex items-center justify-center">
+            <h1 class="text-white text-6xl font-bold">MySoli</h1>
+        </div>
+        <!-- Right Side -->
+        <div class="animacionForm w-1/2 bg-white flex flex-col justify-center p-8">
+            <form class="space-y-6" [formGroup]="form" (ngSubmit)="submit()">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Usuario</label>
+                    <input type="text" id="username" name="username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="Ingrese su email" formControlName="email">
+                    @if(isRequired('email')){
+                        <small class="text-red-500">Este campo es requerido</small>}
+                    @if(hasEmailError()){<small class="text-red-500">El correo debe ser válido</small>}
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <input type="password" id="password" name="password" class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="Ingrese su contraseña" formControlName="password">
+                        @if(isRequired('password')){
+                        <small class="text-red-500">Este campo es requerido</small>}
+                    </div>
+                </div>
+                <!-- Cambiar por un "Olvidé mi clave"?? -->
+     <!--            <div class="flex items-center justify-between">
+                    <a href="SignUp" class="text-sm text-gray-500 hover:text-gray-700 flex items-center">
+                        <i class="text-center fas fa-key mr-1">Registrarse</i> 
+                    </a>
+                </div> -->
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    [disabled]="this.form.invalid"
+                    [ngClass]="{'opacity-50 cursor-not-allowed': this.form.invalid}">
+                        Ingresar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <footer class="mt-4 text-sm text-gray-500">
+        MySoli v1.0 by Blume, Donadello, Vivas.
+      </footer>
+</body>
+</html>

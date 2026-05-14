@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <script src=""></script>
+</head>
+<body class="min-h-screen bg-gray-100">
+  <div class="flex flex-col min-h-screen bg-gray-100">
+
+    <div class="bg-white border-b border-gray-300 px-8 py-6 shadow-sm flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900">Historial de tickets</h1>  
+      <button
+      class="bg-gray-300 text-gray-800 px-5 py-2.5 rounded-lg flex items-center hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition"
+      (click)="this._router.navigate([''])"
+    >
+    <i class="fas fa-arrow-left mr-2"></i> Atrás
+    </button>    
+    </div>
+    <div class="w-full max-w-7xl mx-auto p-4 flex-grow overflow-x-auto">   
+
+    <!-- Tabs -->
+    <div class="flex justify-between items-center mb-6">
+      <div class="flex space-x-4">
+        <button class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded flex items-center justify-center gap-2 transition-all 
+                 focus:outline-none focus-visible:ring-2 focus-visible:ring-black"
+                (click)="irCreados()">
+              <span>Creados</span>
+        </button>
+          <button class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded flex items-center justify-center gap-2 transition-all 
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-black" (click)="irRealizados()">
+              <span>Realizados</span>
+          </button>
+          
+      </div>
+      <button class="bg-red-700 hover:bg-blue-600 text-white px-4 py-2 rounded" (click)="generatePDF()"
+      [disabled]="(realizados && ticketsRealizadosFinal.length == 0) || (creados && ticketsCreados.length == 0)"
+      [ngClass]="{'opacity-50 cursor-not-allowed': (realizados && ticketsRealizadosFinal.length == 0) || (creados && ticketsCreados.length == 0)}">
+            Imprimir reporte
+      </button>  
+    </div>   
+
+    <!-- Tickets Creados -->
+    <div id="tickets">
+
+      <ng-template [ngIf]="creados">
+      <h2 class="text-2xl font-bold mb-6">Solicitudes creadas</h2>
+      <div class="overflow-x-auto">
+
+
+    <!-- Este div solo se muestra durante la creación del PDF -->
+      <!-- <div id="soloParaPDF" class="hidden mb-3"> -->
+        <div id="soloParaPDF" class="hidden mb-3">
+          <div class="flex items-center justify-center">
+            <h1 class="text-black text-6xl font-bold">Solicitudes creadas</h1>
+          </div>
+        <div class="mt-4">
+          <p class="text-2xl text-center">
+            Total de tickets: {{ticketsRealizadosFinal.length + ticketsCreados.length}}.
+          </p>
+          <p class="text-2xl text-center">
+            Tickets REALIZADOS: {{ticketsRealizadosFinal.length}} - {{((ticketsRealizadosFinal.length + ticketsCreados.length) > 0 
+            ? (ticketsRealizadosFinal.length)/(ticketsRealizadosFinal.length + ticketsCreados.length)*100 : 0) | number:'1.2-2'}}% del total.
+          </p>
+          <p class="text-2xl text-center">
+            Tickets CREADOS: {{ticketsCreados.length}} - {{
+              ((ticketsRealizadosFinal.length + ticketsCreados.length) > 0
+                ? (ticketsCreados.length / (ticketsRealizadosFinal.length + ticketsCreados.length) * 100) : 0) | number:'1.2-2'
+            }}% del total.
+          </p>
+          <br>
+        </div>
+      </div>
+
+        <!-- FILTROS -->
+        <div id="filtros" class="bg-white p-4 rounded shadow mb-6 grid md:grid-cols-4 gap-4 text-sm">
+          <!-- Tipo de ticket -->
+          <div>
+            <label class="block text-gray-600 font-medium mb-1">Tipo de ticket</label>
+            <input
+              type="text"
+              [(ngModel)]="filtroCreados.tipoTicket"
+              placeholder="Ej: Software, Viaje..."
+              class="w-full border rounded p-2"
+            />
+          </div>
+
+          <!-- Estado -->
+          <div>
+            <label class="block text-gray-600 font-medium mb-1">Estado</label>
+            <select [(ngModel)]="filtroCreados.estado" class="w-full border rounded p-2">
+              <option value="">Todos</option>
+              <option *ngFor="let est of estadosDisponibles" [value]="est">{{ est }}</option>
+            </select>
+          </div>
+
+          <!-- Área responsable -->
+          <div>
+            <label class="block text-gray-600 font-medium mb-1">Área responsable</label>
+            <select [(ngModel)]="filtroCreados.area" class="w-full border rounded p-2">
+              <option value="">Todas</option>
+              <option *ngFor="let area of areasDisponibles" [value]="area">{{ area }}</option>
+            </select>
+          </div>
+
+          <!-- Responsable -->
+          <div>
+            <label class="block text-gray-600 font-medium mb-1">Responsable</label>
+            <input
+              type="text"
+              [(ngModel)]="filtroCreados.responsable"
+              placeholder="Ej: María López"
+              class="w-full border rounded p-2"
+            />
+          </div>
+
+          <!-- Prioridad -->
+          <div>
+            <label class="block text-gray-600 font-medium mb-1">Prioridad</label>
+            <select [(ngModel)]="filtroCreados.prioridad" class="w-full border rounded p-2">
+              <option value="">Todas</option>
+              <option *ngFor="let p of prioridadesDisponibles" [value]="p">{{ p }}</option>
+            </select>
+          </div>
+
+          <!-- Rango de fecha -->
+          <div class="md:col-span-2 flex gap-2">
+            <div class="flex-1">
+              <label class="block text-gray-600 font-medium mb-1">Desde</label>
+              <input type="date" [(ngModel)]="filtroCreados.fechaDesde" class="w-full border rounded p-2" />
+            </div>
+            <div class="flex-1">
+              <label class="block text-gray-600 font-medium mb-1">Hasta</label>
+              <input type="date" [(ngModel)]="filtroCreados.fechaHasta" class="w-full border rounded p-2" />
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Botón para limpiar filtros -->
+        <div class="text-right mt-2">
+          <button
+            type="button"
+            class="text-sm text-blue-600 underline hover:text-blue-800"
+            (click)="resetFiltrosCreados()"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+
+        <table class="min-w-full bg-white rounded-lg shadow">
+          <thead class="bg-gray-200 text-left text-sm font-semibold">
+            <tr>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('id', 'creados')">
+                ID <span *ngIf="sortColumn === 'id'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('tipoTicket', 'creados')">
+                Tipo de solicitud <span *ngIf="sortColumn === 'tipoTicket'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('estado', 'creados')">
+                Estado <span *ngIf="sortColumn === 'estado'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('fechaSolicitud', 'creados')">
+                Fecha de solicitud <span *ngIf="sortColumn === 'fechaSolicitud'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('fechaFinalizacion', 'realizados')">
+                Fecha de finalización <span *ngIf="sortColumn === 'fechaFinalizacion'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('areaResponsable', 'creados')">
+                Área responsable <span *ngIf="sortColumn === 'areaResponsable'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('nombreResponsable', 'realizados')">
+                Responsable <span *ngIf="sortColumn === 'nombreResponsable'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('prioridad', 'realizados')">
+                Prioridad <span *ngIf="sortColumn === 'prioridad'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('puntuacion', 'realizados')">
+                Puntuación <span *ngIf="sortColumn === 'puntuacion'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ticket of ticketsFiltradosCreados" class="border-t hover:bg-gray-100 text-sm cursor-pointer"
+            [routerLink]="'/DetallesSolicitud/' + ticket.id">
+              <td class="px-4 py-2">
+                <a class="text-black-600">
+                  {{ ticket.id }}
+                </a>
+              </td>
+              <td class="px-4 py-2">{{ ticket.tipoTicket }}</td>
+              <td class="px-4 py-2">{{ ticket.estado }}</td>
+              <td class="px-4 py-2">{{ ticket.fechaSolicitud | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="px-4 py-2">{{ ticket.fechaFinalizacion | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="px-4 py-2">{{ ticket.areaResponsable }}</td>
+              <td class="px-4 py-2">{{ ticket.nombreResponsable + ' ' + ticket.apellidoResponsable}}</td>
+              <td class="px-4 py-2">{{ ticket.prioridad }}</td>
+              <td class="px-4 py-2">{{ ticket.puntuacion }}</td>          
+
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="flex justify-between items-center mt-4 text-sm text-gray-700">
+          <button
+            class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+            (click)="cambiarPaginaTicketsCreados('anterior')"
+            [disabled]="paginaActualTicketsCreados === 1"
+          >
+            ← Anterior
+          </button>
+        
+          <span>Página {{ paginaActualTicketsCreados }} de {{ totalPaginasTicketsCreados }}</span>
+        
+          <button
+            class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+            (click)="cambiarPaginaTicketsCreados('siguiente')"
+            [disabled]="paginaActualTicketsCreados === totalPaginasTicketsCreados"
+          >
+            Siguiente →
+          </button>
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Tickets Realizados -->
+    <ng-template [ngIf]="realizados">
+      <h2 class="text-2xl font-bold mb-6">Solicitudes realizadas</h2>
+      <div class="overflow-x-auto">
+
+      <!-- Este div solo se muestra durante la creación del PDF -->
+        <div id="soloParaPDF2" class="hidden mb-3">
+          <div class="flex items-center justify-center">
+            <h1 class="text-black text-6xl font-bold">Solicitudes realizadas</h1>
+          </div>
+        <div class="mt-4">
+          <p class="text-2xl text-center">
+            Total de tickets: {{ticketsRealizadosFinal.length + ticketsCreados.length}}.
+          </p>
+          <p class="text-2xl text-center">
+            Tickets REALIZADOS: {{ticketsRealizadosFinal.length}} - {{((ticketsRealizadosFinal.length + ticketsCreados.length) > 0 
+            ? (ticketsRealizadosFinal.length)/(ticketsRealizadosFinal.length + ticketsCreados.length)*100 : 0) | number:'1.2-2'}}% del total.
+          </p>
+          <p class="text-2xl text-center">
+            Tickets CREADOS: {{ticketsCreados.length}} - {{
+              ((ticketsRealizadosFinal.length + ticketsCreados.length) > 0
+                ? (ticketsCreados.length / (ticketsRealizadosFinal.length + ticketsCreados.length) * 100) : 0) | number:'1.2-2'
+            }}% del total.
+          </p>
+        <br>
+        </div>
+      </div>
+
+        <!-- FILTROS -->
+        <div id="filtros2" class="bg-white p-4 rounded shadow mb-6 grid md:grid-cols-4 gap-4 text-sm">
+          <!-- Tipo de ticket -->
+          <div class="md:col-span-1">
+            <label class="block text-gray-600 font-medium mb-1">Tipo de ticket</label>
+            <input
+              type="text"
+              [(ngModel)]="filtroRealizados.tipoTicket"
+              placeholder="Ej: Software, Viaje..."
+              class="w-full border rounded p-2"
+            />
+          </div>
+
+          <!-- Prioridad -->
+          <div>
+            <label class="block text-gray-600 font-medium mb-1">Prioridad</label>
+            <select [(ngModel)]="filtroRealizados.prioridad" class="w-full border rounded p-2">
+              <option value="">Todas</option>
+              <option *ngFor="let p of prioridadesDisponibles" [value]="p">{{ p }}</option>
+            </select>
+          </div>
+
+          <!-- Nombre del solicitante -->
+          <div>
+            <label class="block text-gray-600 font-medium mb-1">Solicitante</label>
+            <input
+              type="text"
+              [(ngModel)]="filtroRealizados.nombreSolicitante"
+              placeholder="Ej: Juan Pérez"
+              class="w-full border rounded p-2"
+            />
+          </div>
+
+          <!-- Rango de fecha -->
+          <div class="md:col-span-2 flex gap-2">
+            <div class="flex-1">
+              <label class="block text-gray-600 font-medium mb-1">Desde</label>
+              <input type="date" [(ngModel)]="filtroRealizados.fechaDesde" class="w-full border rounded p-2" />
+            </div>
+            <div class="flex-1">
+              <label class="block text-gray-600 font-medium mb-1">Hasta</label>
+              <input type="date" [(ngModel)]="filtroRealizados.fechaHasta" class="w-full border rounded p-2" />
+            </div>
+          </div>
+
+          
+        </div>
+
+        <!-- Botón para limpiar filtros -->
+        <div class="md:col-span-4 text-right mt-2">
+          <button
+            type="button"
+            class="text-sm text-blue-600 underline hover:text-blue-800"
+            (click)="resetFiltrosRealizados()"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+
+        <table class="min-w-full bg-white rounded-lg shadow">
+          <thead class="bg-gray-200 text-left text-sm font-semibold">
+            <tr>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('id', 'realizados')">
+                ID <span *ngIf="sortColumn === 'id'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('tipoTicket', 'realizados')">
+                Tipo de solicitud <span *ngIf="sortColumn === 'tipoTicket'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('estado', 'realizados')">
+                Estado <span *ngIf="sortColumn === 'estado'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('fechaSolicitud', 'realizados')">
+                Fecha de solicitud <span *ngIf="sortColumn === 'fechaSolicitud'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('fechaFinalizacion', 'realizados')">
+                Fecha de finalización <span *ngIf="sortColumn === 'fechaFinalizacion'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('nombreSolicitante', 'realizados')">
+                Solicitante <span *ngIf="sortColumn === 'nombreSolicitante'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('prioridad', 'realizados')">
+                Prioridad <span *ngIf="sortColumn === 'prioridad'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="px-4 py-2 cursor-pointer" (click)="sortTicketsBy('puntuacion', 'realizados')">
+                Puntuación <span *ngIf="sortColumn === 'puntuacion'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ticket of ticketsFiltradosRealizados" class="border-t hover:bg-gray-100 text-sm cursor-pointer"
+            [routerLink]="'/DetallesSolicitud/' + ticket.id">
+              <td class="px-4 py-2">
+                <a  class="text-black-600">
+                  {{ ticket.id }}
+                </a>
+              </td>
+              <td class="px-4 py-2">{{ ticket.tipoTicket }}</td>
+              <td class="px-4 py-2">{{ ticket.estado }}</td>
+              <td class="px-4 py-2">{{ ticket.fechaSolicitud | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="px-4 py-2">{{ ticket.fechaFinalizacion | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="px-4 py-2">{{ ticket.nombreSolicitante }} {{ ticket.apellidoSolicitante }}</td>
+              <td class="px-4 py-2">{{ ticket.prioridad }}</td>   
+              <td class="px-4 py-2">{{ ticket.puntuacion }}</td>          
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="flex justify-between items-center mt-4 text-sm text-gray-700">
+          <button
+            class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+            (click)="cambiarPaginaTicketsRealizados('anterior')"
+            [disabled]="paginaActualTicketsRealizados === 1"
+          >
+            ← Anterior
+          </button>
+        
+          <span>Página {{ paginaActualTicketsRealizados }} de {{ totalPaginasTicketsRealizados }}</span>
+        
+          <button
+            class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+            (click)="cambiarPaginaTicketsRealizados('siguiente')"
+            [disabled]="paginaActualTicketsRealizados === totalPaginasTicketsRealizados"
+          >
+            Siguiente →
+          </button>
+        </div>
+      </div>
+    </ng-template>
+
+    <div class="mt-6"></div>
+              
+    <!-- Gráficos torta -->
+    <div class="bg-white p-4 rounded shadow flex flex-row justify-center items-start gap-4"
+    *ngIf="mostrarPieRealizados || mostrarPieCreados || mostrarPieTotal">
+      
+    <div class="w-full max-w-xs h-[300px] p-4 flex items-center justify-center" *ngIf="mostrarPieRealizados">
+      <canvas baseChart
+        [data]="pieChartDataRealizados"
+        [type]="'pie'"
+        [options]="pieChartOptionsRealizados"
+        class="max-w-[250px] w-full h-full"
+      ></canvas>
+    </div>
+
+    <div class="w-full max-w-xs h-[300px] p-4 flex items-center justify-center" *ngIf="mostrarPieCreados">
+      <canvas baseChart
+        [data]="pieChartDataCreados"
+        [type]="'pie'"
+        [options]="pieChartOptionsCreados"
+        class="max-w-[300px] w-full h-full"
+      ></canvas>
+    </div>
+<!--     
+      <div class="w-full max-w-xs h-[300px] p-4" *ngIf="mostrarPieCreados">
+        <canvas baseChart
+          [data]="pieChartDataCreados"
+          [type]="'pie'"
+          [legend]="true"
+          [options]="pieChartOptionsCreados"
+          height="200"
+          width="300">
+        </canvas>
+      </div> -->
+    
+      <div class="w-full max-w-xs h-[300px] p-4 flex items-center justify-center" *ngIf="mostrarPieTotal">
+        <canvas baseChart
+          [data]="pieChartDataTotal"
+          [type]="'pie'"
+          [options]="pieChartOptionsTotal"
+          class="max-w-[300px] w-full h-full"
+        ></canvas>
+      </div>
+
+      <!-- <div class="w-full max-w-xs h-[300px] p-4" *ngIf="mostrarPieTotal">
+        <canvas baseChart
+          [data]="pieChartDataTotal"
+          [type]="'pie'"
+          [legend]="true"
+          [options]="pieChartOptionsTotal"
+          height="200"
+          width="300">
+        </canvas>
+      </div> -->
+    
+    </div>
+
+</div>
+</div>
+</div>
+</body>
+</html>

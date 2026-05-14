@@ -1,0 +1,8 @@
+<div class="flex h-screen">
+    <div *ngIf="estaLogueado">
+        <app-menu></app-menu>
+    </div>
+    <div class="flex-1 overflow-auto">
+        <router-outlet></router-outlet>
+    </div>
+</div>

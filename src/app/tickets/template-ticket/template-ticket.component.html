@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nuevo Template</title>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+  <!-- Contenedor principal -->
+  <div class="flex-grow flex flex-col bg-gray-100">
+
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-300 px-8 py-6 mb-8 shadow-sm rounded-t-md flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900">Creación de un nuevo template de solicitud</h1>
+      <button
+        class="bg-gray-300 text-gray-800 px-5 py-2.5 rounded-lg flex items-center hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition"
+        (click)="volverAtras()"
+      >
+        <i class="fas fa-arrow-left mr-2"></i> Atrás
+      </button>
+    </div>
+
+    <!-- Formulario -->
+    <form [formGroup]="formTemplate" (ngSubmit)="guardarTemplate()" class="w-full max-w-7xl mx-auto p-8 pb-20">
+
+      <div class="grid grid-cols-3 gap-6 mb-8 ">
+        
+        <!-- Datos del template -->
+        <div class="col-span-2">
+          <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Datos del template</h3>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-gray-700 font-medium">Nombre del template:</label>
+                <input type="text" formControlName="titulo" class="w-full border border-gray-300 p-2 rounded" />
+              </div>
+              <div>
+                <label class="block text-gray-700 font-medium">Motivo del template:</label>
+                <input type="text" formControlName="motivo" class="w-full border border-gray-300 p-2 rounded" />
+              </div>
+              <div>
+                <label class="block text-gray-700 font-medium">Área responsable:</label>
+                <select formControlName="areaResponsable" class="w-full border border-gray-300 p-2 rounded">
+                  <option value="Sistemas">Sistemas</option>
+                  <option value="Recursos Humanos">Recursos Humanos</option>
+                  <option value="Operaciones">Operaciones</option>
+                  <option value="Contabilidad">Contabilidad</option>
+                  <option value="Tesoreria">Tesoreria</option>
+                  <option value="Administración">Administración</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="col-span-1">
+          <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Agregar campos</h3>
+
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-700 font-medium">Campo de texto</span>
+                <button
+                  class="bg-red-700 text-white w-8 h-8 rounded hover:bg-red-800"
+                  (click)="agregarInput()"
+                  type="button"
+                >+</button>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-700 font-medium">Menú desplegable</span>
+                <button
+                  class="bg-red-700 text-white w-8 h-8 rounded hover:bg-red-800"
+                  (click)="agregarDesplegable()"
+                  type="button"
+                >+</button>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-700 font-medium">Grupo de radio</span>
+                <button
+                  class="bg-red-700 text-white w-8 h-8 rounded hover:bg-red-800"
+                  (click)="agregarRadioButtons()"
+                  type="button"
+                >+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campos ordenables -->
+      <div cdkDropList (cdkDropListDropped)="reordenarCampos($event)" class="space-y-4">
+
+        <div *ngFor="let campo of campos; let i = index" cdkDrag class="bg-white border rounded shadow p-4 cursor-move">
+          <ng-container [ngSwitch]="campo.tipo">
+
+            <ng-container *ngSwitchCase="'input'">
+              <div [formGroup]="asFormGroup(campo.control)" class="space-y-2">
+                <input
+                  formControlName="nombre"
+                  class="w-full border border-gray-300 p-2 rounded"
+                  placeholder="Nombre del campo"
+                />
+                <input
+                  formControlName="valor"
+                  class="w-full border border-gray-300 p-2 rounded"
+                  placeholder="Valor por defecto (opcional)"
+                />
+                <button
+                  type="button"
+                  (click)="eliminarCampo(i)"
+                  class="bg-red-700 text-white px-3 py-2 rounded mt-2"
+                  title="Eliminar campo"
+                >
+                  ✕ Eliminar
+                </button>
+              </div>
+            </ng-container>
+            
+
+            <!-- Campo desplegable -->
+            <ng-container *ngSwitchCase="'desplegable'">
+              <div [formGroup]="asFormGroup(campo.control)" class="space-y-3">
+                <input formControlName="nombre" class="w-full border border-gray-300 p-2 rounded" placeholder="Nombre del menú" />
+
+                <div formArrayName="opciones">
+                  <div *ngFor="let opt of asFormArray(campo.control.get('opciones')!).controls; let j = index" class="flex items-center gap-2">
+                    <input [formControl]="asFormControl(opt)" class="flex-1 border border-gray-300 p-2 rounded" placeholder="Opción {{ j + 1 }}" />
+                    <button type="button" (click)="eliminarOpcion(i, j)" class="text-red-600 text-lg leading-none px-2 py-1" title="Eliminar opción">×</button>
+                  </div>
+                  <button type="button" (click)="agregarOpcion(i)" class="text-blue-600 text-sm mt-1">+ Agregar opción</button>
+                </div>
+
+                <button type="button" (click)="eliminarCampo(i)" class="text-red-600 text-sm mt-2">Eliminar campo</button>
+              </div>
+            </ng-container>
+
+            <!-- Campo radio -->
+            <ng-container *ngSwitchCase="'radio'">
+              <div [formGroup]="asFormGroup(campo.control)" class="space-y-3">
+                <input formControlName="nombre" class="w-full border border-gray-300 p-2 rounded" placeholder="Nombre del grupo" />
+
+                <div formArrayName="opciones">
+                  <div *ngFor="let opt of getOpciones(i).controls; let j = index" class="flex items-center gap-2">
+                    <input [formControl]="asFormControl(opt)" class="flex-1 border border-gray-300 p-2 rounded" placeholder="Opción {{ j + 1 }}" />
+                    <button type="button" (click)="eliminarOpcion(i, j)" class="text-red-600 text-lg leading-none" title="Eliminar opción">×</button>
+                  </div>
+                  <button type="button" (click)="agregarOpcion(i)" class="text-blue-600 text-sm mt-1">+ Agregar opción</button>
+                </div>
+
+                <button type="button" (click)="eliminarCampo(i)" class="text-red-600 text-sm mt-2">Eliminar grupo</button>
+              </div>
+            </ng-container>
+
+          </ng-container>
+        </div>
+
+      </div>
+
+      <!-- Botón de submit -->
+      <div class="mt-6 text-right">
+        <button class="bg-red-700 text-white px-6 py-2 rounded hover:bg-red-800" type="submit">
+          Guardar template
+        </button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
